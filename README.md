@@ -9,5 +9,5 @@ $ npm install insite-subscriptions-client
 Or
 
 ```sh
-$ yarn add insite-subscriptions-client
+$ bun add insite-subscriptions-client
 ```
