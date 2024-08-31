@@ -14,38 +14,65 @@ import {
 } from "./symbols";
 
 
-const ascSort = (a, b) => a > b ? 1 : a < b ? -1 : 0;
-const descSort = (a, b) => a > b ? -1 : a < b ? 1 : 0;
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 
-export class SubscriptionArray extends Array {
-	constructor(updates, onUpdate) {
+type Item = unknown;
+
+type Updated<I extends Item = Item> = {
+	deleted: I[];
+	added: I[];
+} & I[];
+
+export type Updates<I extends Item = Item> =
+	(
+		[ "a"/* add */, newItem: I ] |
+		[ "d"/* delete */, itemToDelete: I ] |
+		[ "i"/* initial */, items: I[], sort?: -1 | 1 ] |
+		null
+	)[] |
+	null;
+
+type UpdateHandler<I extends Item = Item> = (array: SubscriptionArray<I>, updated: Updated<I>, updates: Updates<I>) => void;
+
+const ascSort = (a: any, b: any) => a > b ? 1 : a < b ? -1 : 0;
+const descSort = (a: any, b: any) => a > b ? -1 : a < b ? 1 : 0;
+
+
+export class SubscriptionArray<I extends Item = Item> extends Array<I> {
+	constructor(updates?: Updates<I>, onUpdate?: UpdateHandler<I>) {
 		super();
 		
-		this.handleUpdate = onUpdate;
+		if (onUpdate)
+			this.handleUpdate = onUpdate;
 		
 		if (Array.isArray(updates))
 			this.update(updates);
 		
 	}
 	
-	sortDirection = 0;
+	sorted: Item[] = [];
 	
-	sortCompareFunction = null;
+	handleUpdate;
+	
+	sortDirection: -1 | 0 | 1 = 0;
+	
+	sortCompareFunction: null | typeof ascSort | typeof descSort = null;
 	
 	[getHandleUpdateSymbol]() {
 		return this.handleUpdate;
 	}
 	
-	[setHandleUpdateSymbol](handleUpdate) {
+	[setHandleUpdateSymbol](handleUpdate: UpdateHandler<I>) {
 		return (this.handleUpdate = handleUpdate);
 	}
 	
-	update(updates) {
+	update(updates: Updates<I>) {
 		
-		const updated = [];
-		updated.deleted = [];
-		updated.added = [];
+		const updated: Updated<I> = Object.assign([], {
+			deleted: [],
+			added: []
+		});
 		
 		if (updates) {
 			let shouldSort = false;
@@ -76,7 +103,7 @@ export class SubscriptionArray extends Array {
 					}
 					
 					case "a"/* add */: {
-						const newItem = update[1];
+						const [ , newItem ] = update;
 						
 						if (!this.includes(newItem)) {
 							this.push(newItem);
@@ -90,7 +117,7 @@ export class SubscriptionArray extends Array {
 					}
 					
 					case "d"/* delete */: {
-						const itemToDelete = update[1];
+						const [ , itemToDelete ] = update;
 						
 						if (removeOne(this, itemToDelete))
 							updated.deleted.push(itemToDelete);
@@ -102,13 +129,13 @@ export class SubscriptionArray extends Array {
 						this.clear();
 				}
 			
-			if (shouldSort)
+			if (shouldSort && this.sortCompareFunction)
 				this.sort(this.sortCompareFunction);
 			
 		} else
 			this.clear();
 		
-		this.handleUpdate?.(this, updated, updates?.[0] && updates);
+		this.handleUpdate?.(this, updated, updates?.[0] ? updates : null);
 		
 		return this;
 	}
@@ -159,12 +186,13 @@ export class SubscriptionArray extends Array {
 	static getAsUpdatesSymbol = getAsUpdatesSymbol;
 	static getAsInitialUpdatedSymbol = getAsInitialUpdatedSymbol;
 	static clearSymbol = clearSymbol;
+	static WithSubscription: typeof SubscriptionArrayWithSubscription;
 	
 }
 
 
-SubscriptionArray.WithSubscription = class SubscriptionArrayWithSubscription extends SubscriptionArray {
-	constructor(publicationName, params, onUpdate, immediately = true) {
+export class SubscriptionArrayWithSubscription<I extends Item = Item> extends SubscriptionArray<I> {
+	constructor(publicationName: string, params: unknown[], onUpdate: UpdateHandler<I>, immediately = true) {
 		super(null, onUpdate);
 		
 		this.publicationName = publicationName;
@@ -175,12 +203,14 @@ SubscriptionArray.WithSubscription = class SubscriptionArrayWithSubscription ext
 		
 	}
 	
-	subscription = null;
+	publicationName;
+	params;
+	subscription: null | Subscription = null;
 	
 	subscribe() {
 		
 		if (!this.subscription)
-			this.subscription = new Subscription("array", this.publicationName, this.params, updates => this.update(updates));
+			this.subscription = new Subscription("array", this.publicationName, this.params, updates => this.update(updates as Updates<I>));
 		
 	}
 	
@@ -201,7 +231,7 @@ SubscriptionArray.WithSubscription = class SubscriptionArrayWithSubscription ext
 		return this.unsubscribe;
 	}
 	
-	renew(publicationName, params) {
+	renew(publicationName?: string, params?: unknown[]) {
 		
 		if (this.subscription) {
 			this.unsubscribe();
@@ -238,4 +268,8 @@ SubscriptionArray.WithSubscription = class SubscriptionArrayWithSubscription ext
 	static renewSymbol = renewSymbol;
 	static getSubscriptionSymbol = getSubscriptionSymbol;
 	
-};
+}
+
+SubscriptionArray.WithSubscription = SubscriptionArrayWithSubscription;
+
+export { Updated as SubscriptionArrayUpdated };

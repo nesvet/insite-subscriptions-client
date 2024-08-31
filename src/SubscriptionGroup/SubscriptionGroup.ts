@@ -1,80 +1,107 @@
-import { debounce } from "@nesvet/n";
 import EventEmitter from "eventemitter3";
+import { debounce, StatefulPromise } from "@nesvet/n";
 import { privates } from "./common";
 import { SubscriptionGroupItem } from "./SubscriptionGroupItem";
+import {
+	Definition,
+	ParseValues,
+	SubscriptionHandle,
+	SubscriptionOnBeforeInit,
+	SubscriptionType,
+	TupleDefinition,
+	UnparsedDefinition
+} from "./types";
 
 
-function parseDefinition(definition) {
-	if (Array.isArray(definition)) {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+
+function isTupleDefinition<T extends SubscriptionType>(definition: UnparsedDefinition<T>): definition is TupleDefinition {
+	return Array.isArray(definition);
+}
+
+type Target = any;
+
+type Options = {
+	target?: Target;
+	debounce?: number;
+	immediately?: boolean;
+};
+
+
+function parseDefinition<T extends SubscriptionType>(definition: UnparsedDefinition<T>) {
+	if (isTupleDefinition(definition)) {
 		const args = definition.slice();
 		
-		const parsed = {};
+		const parsed: Partial<Definition<T>> = {};
 		
-		parsed.name = args.shift();
+		parsed.name = args.shift() as Definition<T>["name"];
 		if (typeof args[0] == "object" && !Array.isArray(args[0])) {
-			parsed.value = args.shift();
-			parsed.type = parsed.value.toString().match(/Subscription(Object|Array|Map)/)[1];
-			if (parsed.type)
-				parsed.type = parsed.type.toLowerCase();
-			else
+			parsed.value = args.shift() as Definition<T>["value"];
+			parsed.type = parsed.value!.toString().match(/Subscription(Object|Array|Map)/)?.[1].toLowerCase() as Definition<T>["type"];
+			if (!parsed.type)
 				throw new Error("Unknown value type");
 		} else {
 			if (typeof args[0] == "string")
-				parsed.type = args.shift();
+				parsed.type = args.shift() as Definition<T>["type"];
 			if (typeof args[0] == "string")
-				parsed.publicationName = args.shift();
+				parsed.publicationName = args.shift() as Definition<T>["publicationName"];
 			if (Array.isArray(args[0]))
-				parsed.params = args.shift();
+				parsed.params = args.shift() as Definition<T>["params"];
 		}
-		if (typeof args[0] == "function")
-			parsed.handle = args.shift();
-		if (typeof args[0] == "function")
-			parsed.onBeforeInit = args.shift();
-		if (typeof args[0] == "number")
-			parsed.debounceLimit = args.shift();
-		if (typeof args[0] == "boolean")
-			parsed.preventBind = args.shift();
 		
-		return parsed;
+		if (typeof args[0] == "function")
+			parsed.handle = args.shift() as SubscriptionHandle<T>;
+		if (typeof args[0] == "function")
+			parsed.onBeforeInit = args.shift() as SubscriptionOnBeforeInit<T>;
+		if (typeof args[0] == "number")
+			parsed.debounce = args.shift() as Definition<T>["debounce"];
+		if (typeof args[0] == "boolean")
+			parsed.preventBind = args.shift() as Definition<T>["preventBind"];
+		
+		return parsed as Definition<T>;
 	}
+	
+	definition.type ??= "object" as T;
 	
 	return definition;
 }
 
-export class SubscriptionGroup extends EventEmitter {
-	constructor(definitions, options = {}) {
-		super();
-		
-		const {
+export class SubscriptionGroup<DS extends UnparsedDefinition[] = any[]> extends EventEmitter {
+	constructor(
+		definitions: DS,
+		{
 			target,
 			debounce: debounceLimit = SubscriptionGroup.debounceLimit,
 			immediately
-		} = options;
+		}: Options = {}
+	) {
+		super();
 		
-		this.#applyOptions({ target, debounceLimit });
+		this.applyOptions({ target, debounceLimit });
 		
-		this.#initPromise = new Promise(resolve => (this.#initResolve = resolve));
+		this.#initPromise = new StatefulPromise();
 		
 		this.attach(definitions, false, immediately);
 		
 	}
 	
-	items = [];
-	values = [];
+	target?: Target;
+	emitUpdate!: () => void;
+	
+	items = [] as unknown as Record<string, SubscriptionGroupItem> & SubscriptionGroupItem[];
+	values = [] as DS extends any ? (any[] & Record<string, any>) : ParseValues<DS>;
 	
 	isLoaded = false;
 	isInited = false;
 	
-	#loadPromise;
-	#initPromise;
-	#unloadPromise;
-	#loadResolve;
-	#initResolve;
-	#unloadResolve;
+	#loadPromise!: StatefulPromise<SubscriptionGroup>;
+	#initPromise: StatefulPromise<SubscriptionGroup>;
+	#unloadPromise!: StatefulPromise<SubscriptionGroup>;
 	
-	#debounceLimit = null;
+	#debounceLimit?: null | number = null;
 	
-	#applyOptions({ target, debounceLimit }) {
+	applyOptions({ target, debounceLimit }: { target?: Target; debounceLimit?: number }) {
 		
 		if (this.target !== target) {
 			if (this.target)
@@ -101,15 +128,15 @@ export class SubscriptionGroup extends EventEmitter {
 		
 	}
 	
-	attach(definitions, shouldReload = this.isLoaded, immediately = true) {
+	attach(definitions: DS, shouldReload = this.isLoaded, immediately = true) {
 		if (shouldReload)
 			this.isLoaded = false;
 		
-		if (!this.#loadPromise || this.#loadPromise.isResolved)
-			this.#loadPromise = new Promise(resolve => (this.#loadResolve = resolve));
+		if (!this.#loadPromise || this.#loadPromise.isFulfilled)
+			this.#loadPromise = new StatefulPromise();
 		
-		if (!this.#unloadPromise || this.#unloadPromise.isResolved)
-			this.#unloadPromise = new Promise(resolve => (this.#unloadResolve = resolve));
+		if (!this.#unloadPromise || this.#unloadPromise.isFulfilled)
+			this.#unloadPromise = new StatefulPromise();
 		
 		return Promise.all(definitions.map(definition =>
 			new SubscriptionGroupItem(parseDefinition(definition), this)
@@ -122,7 +149,7 @@ export class SubscriptionGroup extends EventEmitter {
 		}));
 	}
 	
-	detach(names, shouldUpdate = true) {
+	detach(names: string[], shouldUpdate = true) {
 		
 		for (const name of names)
 			this.items[name]?.detach();
@@ -134,11 +161,11 @@ export class SubscriptionGroup extends EventEmitter {
 		
 	}
 	
-	redefine(definitions) {
+	redefine(definitions: DS) {
 		
 		const itemsToDetach = new Map(this.items.map(item => [ item.name, item ]));
 		const definitionsToRedefine = [];
-		const definitionsToAttach = [];
+		const definitionsToAttach = [] as unknown as DS;
 		
 		for (let definition of definitions) {
 			definition = parseDefinition(definition);
@@ -184,7 +211,7 @@ export class SubscriptionGroup extends EventEmitter {
 			this.isLoaded = true;
 			
 			for (const item of this.items)
-				privates.itemLoad(item);
+				privates.itemLoad!(item);
 			
 			this.emit("load", this.values);
 			
@@ -196,11 +223,10 @@ export class SubscriptionGroup extends EventEmitter {
 					this.emitUpdate();
 			
 			
-			this.#loadResolve(this);
-			this.#loadPromise.isResolved = true;
+			this.#loadPromise.resolve(this);
 			
-			if (this.#unloadPromise.isResolved)
-				this.#unloadPromise = new Promise(resolve => (this.#unloadResolve = resolve));
+			if (this.#unloadPromise.isFulfilled)
+				this.#unloadPromise = new StatefulPromise();
 		}
 		
 	}
@@ -219,11 +245,11 @@ export class SubscriptionGroup extends EventEmitter {
 			
 			
 			for (const item of this.items)
-				privates.itemInit(item);
+				privates.itemInit!(item);
 			
 			this.emit("init", this.values);
 			
-			this.#initResolve(this);
+			this.#initPromise.resolve(this);
 		}
 		
 	}
@@ -239,7 +265,7 @@ export class SubscriptionGroup extends EventEmitter {
 			this.isLoaded = false;
 			
 			for (const item of this.items)
-				privates.itemUnload(item);
+				privates.itemUnload!(item);
 			
 			this.emit("unload", this.values);
 			
@@ -249,11 +275,10 @@ export class SubscriptionGroup extends EventEmitter {
 			else
 				this.emitUpdate();
 			
-			this.#unloadResolve(this);
-			this.#unloadPromise.isResolved = true;
+			this.#unloadPromise.resolve(this);
 			
-			if (this.#loadPromise.isResolved)
-				this.#loadPromise = new Promise(resolve => (this.#loadResolve = resolve));
+			if (this.#loadPromise.isFulfilled)
+				this.#loadPromise = new StatefulPromise();
 		}
 		
 	}
@@ -283,10 +308,12 @@ export class SubscriptionGroup extends EventEmitter {
 	
 	static {
 		
-		privates.groupLoad = group => group.#load();
-		privates.groupInit = group => group.#init();
-		privates.groupUnload = group => group.#unload();
+		privates.groupLoad = (group: SubscriptionGroup) => group.#load();
+		privates.groupInit = (group: SubscriptionGroup) => group.#init();
+		privates.groupUnload = (group: SubscriptionGroup) => group.#unload();
 		
 	}
 	
 }
+
+export { Options as SubscriptionGroupOptions, Target as SubscriptionGroupTarget };

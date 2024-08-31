@@ -1,26 +1,18 @@
-//#if _SSR
-// import { publications } from "insite-subscriptions-server";
+import type { InSiteWebSocket } from "insite-ws/client";
 
 
-// export const initialsMap = new Map();
-
-// export const subscriptionContext = {};
-
-// export async function Subscription(type, publicationName, args = [], handler) {
-// 	const value = await publications.get(publicationName)?.fetch(subscriptionContext, ...args);
-
-// 	subscriptionContext.initials.push(JSON.stringify(value));
-
-// 	handler(value);
-
-// }
+declare global {
+	var __initials: undefined | unknown[];// eslint-disable-line no-var
+}
 
 
-//#else
-let i, subscriptions, ws;
+let i: number;
+let subscriptions: Map<number, Subscription>;
+let ws: InSiteWebSocket;
+
 
 export class Subscription {
-	constructor(type, publicationName, args = [], handler, immediately = true) {
+	constructor(type: "array" | "map" | "object", publicationName: string, args: unknown[] = [], handler: (updates: unknown) => void, immediately = true) {
 		
 		if (!ws)
 			throw new Error("Subscription is not binded to WS. Do Subscription.bindTo(ws) first");
@@ -47,6 +39,14 @@ export class Subscription {
 		
 	}
 	
+	i;
+	type;
+	publicationName;
+	args;
+	handler;
+	immediately;
+	isActive;
+	
 	start = () => {
 		
 		ws.sendMessage("s-s"/* subscription subscribe */, this.type, this.publicationName, this.i, this.args, this.immediately);
@@ -66,20 +66,18 @@ export class Subscription {
 	}
 	
 	
-	static bindTo(_ws) {
+	static bindTo(_ws: InSiteWebSocket) {
 		ws = _ws;
 		
 		i = 0;
 		
-		subscriptions =
-			Subscription.subscriptions =
-				new Map();
+		subscriptions = new Map();
 		
-		ws.on("message:s-c"/* subscription changed */, (_i, data) => {
-			const subscription = subscriptions.get(_i);
+		ws.on("message:s-c"/* subscription changed */, (si: number, updates: unknown) => {
+			const subscription = subscriptions.get(si);
 			if (subscription) {
 				subscription.isActive = true;
-				subscription.handler(data);
+				subscription.handler(updates);
 			}
 			
 		});
@@ -101,6 +99,3 @@ export class Subscription {
 	}
 	
 }
-
-
-//#endif
