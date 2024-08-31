@@ -3,11 +3,11 @@
   "version": "1.0.295",
   "description": "inSite subscriptions client side",
   "type": "module",
-  "main": "./lib/index.js",
-  "module": "./lib/index.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "packageManager": "bun@1.1.9",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "bun .conveyer.js",
   },
   "repository": {
     "type": "git",
@@ -26,10 +26,6 @@
     "eventemitter3": "^5"
   },
   "devDependencies": {
-    "@nesvet/eslint-config": "^1"
-  },
-  "peerDependencies": {
-    "insite-subscriptions-server": "^1",
-    "insite-ws": "^1"
+    "@nesvet/conveyer": "^2.2.4",
   }
 }

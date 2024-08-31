@@ -4,5 +4,5 @@
 *.log
 node_modules/
 .github/
-.eslintrc
+.conveyer.js
 tsconfig.json
