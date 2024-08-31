@@ -1,6 +1,6 @@
 {
   "name": "insite-subscriptions-client",
-  "version": "1.0.295",
+  "version": "2.0.0",
   "description": "inSite subscriptions client side",
   "type": "module",
   "main": "./dist/index.js",
