@@ -5,4 +5,5 @@
 node_modules/
 .github/
 .conveyer.js
+eslint.config.js
 tsconfig.json
