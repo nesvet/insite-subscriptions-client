@@ -1,6 +1,9 @@
 import type { InSiteWebSocket } from "insite-ws/client";
 
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+
 declare global {
 	var __initials: undefined | unknown[];// eslint-disable-line no-var
 }
@@ -12,7 +15,7 @@ let ws: InSiteWebSocket;
 
 
 export class Subscription {
-	constructor(type: "array" | "map" | "object", publicationName: string, args: unknown[] = [], handler: (updates: unknown) => void, immediately = true) {
+	constructor(type: "array" | "map" | "object", publicationName: string, args: unknown[] = [], handler: (updates: any) => void, immediately = true) {
 		
 		if (!ws)
 			throw new Error("Subscription is not binded to WS. Do Subscription.bindTo(ws) first");
@@ -73,7 +76,7 @@ export class Subscription {
 		
 		subscriptions = new Map();
 		
-		ws.on("message:s-c"/* subscription changed */, (si: number, updates: unknown) => {
+		ws.on("message:s-c"/* subscription changed */, (si: number, updates: any) => {
 			const subscription = subscriptions.get(si);
 			if (subscription) {
 				subscription.isActive = true;
