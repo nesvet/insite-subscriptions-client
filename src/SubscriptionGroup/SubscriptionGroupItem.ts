@@ -1,9 +1,27 @@
 import EventEmitter from "eventemitter3";
 import { debounce, removeOne, StatefulPromise } from "@nesvet/n";
-import { type SubscriptionArrayUpdated, SubscriptionArrayWithSubscription } from "../SubscriptionArray";
-import { type SubscriptionMapUpdated, SubscriptionMapWithSubscription } from "../SubscriptionMap";
-import { type Updated as SubscriptionObjectUpdated, SubscriptionObjectWithSubscription } from "../SubscriptionObject";
 import {
+	type Updated as SubscriptionArrayUpdated,
+	type UpdateHandler as SubscriptionArrayUpdateHandler,
+	type Updates as SubscriptionArrayUpdates,
+	SubscriptionArrayWithSubscription
+} from "../SubscriptionArray";
+import {
+	type Updated as SubscriptionMapUpdated,
+	type UpdateHandler as SubscriptionMapUpdateHandler,
+	type Updates as SubscriptionMapUpdates,
+	SubscriptionMapWithSubscription
+} from "../SubscriptionMap";
+import {
+	type Updated as SubscriptionObjectUpdated,
+	type UpdateHandler as SubscriptionObjectUpdateHandler,
+	type Updates as SubscriptionObjectUpdates,
+	SubscriptionObjectWithSubscription
+} from "../SubscriptionObject";
+import {
+	getAsInitialUpdatedSymbol,
+	getAsUpdatesSymbol,
+	getHandleUpdateSymbol,
 	renewSymbol,
 	setHandleUpdateSymbol,
 	subscribeSymbol,
@@ -353,15 +371,39 @@ export class SubscriptionGroupItem<T extends SubscriptionType = SubscriptionType
 	}
 	
 	subscribe() {
-		return this.value?.[subscribeSymbol]();
+		
+		if (this.value)
+			if (this.value[subscribeSymbol])
+				return this.value[subscribeSymbol]();
+			else {
+				const handleUpdate = this.value[getHandleUpdateSymbol]();
+				
+				if (handleUpdate) {
+					const initialUpdated = this.value[getAsInitialUpdatedSymbol]();
+					const updates = this.value[getAsUpdatesSymbol]();
+					
+					switch (this.type) {
+						case "array":
+							return (handleUpdate as SubscriptionArrayUpdateHandler)(this.value as SubscriptionArrayWithSubscription, initialUpdated as SubscriptionArrayUpdated, updates as SubscriptionArrayUpdates);
+						
+						case "map":
+							return (handleUpdate as SubscriptionMapUpdateHandler)(this.value as SubscriptionMapWithSubscription, initialUpdated as SubscriptionMapUpdated, updates as SubscriptionMapUpdates);
+						
+						default:
+							return (handleUpdate as SubscriptionObjectUpdateHandler)(this.value as SubscriptionObjectWithSubscription, initialUpdated as SubscriptionObjectUpdated, updates as SubscriptionObjectUpdates);
+					}
+				}
+			}
+		
+		return null;
 	}
 	
 	unsubscribe() {
-		return this.value?.[unsubscribeSymbol]();
+		return this.value?.[unsubscribeSymbol]?.();
 	}
 	
 	renew(publicationName: Definition<T>["publicationName"], params: Definition<T>["params"]) {
-		return this.value?.[renewSymbol](publicationName, params);
+		return this.value?.[renewSymbol]?.(publicationName, params);
 	}
 	
 	valueOf() {

@@ -33,7 +33,7 @@ export type Updates<I extends Item = Item> =
 	)[] |
 	null;
 
-type UpdateHandler<I extends Item = Item> = (array: SubscriptionArray<I>, updated: Updated<I>, updates: Updates<I>) => void;
+export type UpdateHandler<I extends Item = Item> = (array: SubscriptionArray<I>, updated: Updated<I>, updates: Updates<I>) => void;
 
 const ascSort = (a: any, b: any) => a > b ? 1 : a < b ? -1 : 0;
 const descSort = (a: any, b: any) => a > b ? -1 : a < b ? 1 : 0;
