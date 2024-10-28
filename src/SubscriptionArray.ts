@@ -28,7 +28,7 @@ export type Updates<I extends Item = Item> =
 	(
 		[ "a"/* add */, newItem: I ] |
 		[ "d"/* delete */, itemToDelete: I ] |
-		[ "i"/* initial */, items: I[], sort?: -1 | 1 ] |
+		[ "i"/* initial */, items: I[], sort?: -1 | 0 | 1 ] |
 		null
 	)[] |
 	null;
@@ -51,7 +51,7 @@ export class SubscriptionArray<I extends Item = Item> extends Array<I> {
 		
 	}
 	
-	sorted: Item[] = [];
+	sorted: I[] = [];
 	
 	handleUpdate;
 	
@@ -142,7 +142,7 @@ export class SubscriptionArray<I extends Item = Item> extends Array<I> {
 	
 	[updateSymbol] = this.update;
 	
-	getAsUpdates() {
+	getAsUpdates(): Updates<I> {
 		return (
 			(this.length || this.sortDirection) ?
 				[ [ "i"/* initial */, [ ...this ], this.sortDirection ] ] :
@@ -152,7 +152,7 @@ export class SubscriptionArray<I extends Item = Item> extends Array<I> {
 	
 	[getAsUpdatesSymbol] = this.getAsUpdates;
 	
-	getAsInitialUpdated() {
+	getAsInitialUpdated(): Updated<I> {
 		return Object.assign([ ...this.sorted ], {
 			added: [ ...this.sorted ],
 			deleted: []

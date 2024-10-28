@@ -58,12 +58,12 @@ export class SubscriptionObject {
 		return this;
 	}
 	
-	[getAsUpdatesSymbol]() {
+	[getAsUpdatesSymbol](): Updates {
 		return this[updatesSymbol] && { ...this[updatesSymbol] };
 	}
 	
-	[getAsInitialUpdatedSymbol]() {
-		return this.valueOf();
+	[getAsInitialUpdatedSymbol](): Updated {
+		return this.valueOf()!;
 	}
 	
 	[clearSymbol]() {

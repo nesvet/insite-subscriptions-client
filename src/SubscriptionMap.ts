@@ -29,7 +29,7 @@ export type Updates<I extends Item = Item> =
 	(
 		[ "c"/* create */, item: I ] |
 		[ "d"/* delete */, _id: string ] |
-		[ "i"/* initial */, items: I[], sortList?: SortList ] |
+		[ "i"/* initial */, items: I[], sortList?: null | SortList ] |
 		[ "u"/* update */, itemUpdates: { _id: string } & Partial<I>, isAtomicOrUpdatedFields: string[] | true ] |
 		null
 	)[] |
@@ -38,7 +38,7 @@ export type Updates<I extends Item = Item> =
 type UpdateHandler<I extends Item = Item> = (map: SubscriptionMap<I>, updated: Updated<I>, updates: Updates<I>) => void;
 
 declare global {
-	var __insite_subscription_map_sort_function: ((a: Item, b: Item) => -1 | 0 | 1) | undefined;// eslint-disable-line no-var
+	var __insite_subscription_map_sort_function: ((a: Item, b: Item) => -1 | 0 | 1) | undefined;// eslint-disable-line no-var, camelcase
 }
 
 function createSortFunction(sortList: SortList) {
@@ -90,7 +90,8 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 	
 	handleUpdate;
 	
-	private updates = new Map();
+	// private updates = new Map<string, { _id: string } & Partial<I>>();
+	private updates = new Map<string, I>();
 	
 	sortList: null | SortList = null;
 	
@@ -160,7 +161,7 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 						}
 						
 						if (this.size) {
-							const updatesMap = new Map();
+							const updatesMap = new Map<string, I>();
 							for (const itemUpdates of array)
 								updatesMap.set(itemUpdates._id, itemUpdates);
 							
@@ -223,7 +224,7 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 						if (item) {
 							const isAtomic = update[2] === true;
 							const updatedFields = isAtomic ? Object.keys(itemUpdates) : update[2] as string[];
-							const prevItemUpdates = prevUpdates.get(item._id);
+							const prevItemUpdates = prevUpdates.get(item._id)!;
 							
 							if (TheItem)
 								item.update(itemUpdates);
@@ -249,7 +250,7 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 							updated.added.push(item);
 						}
 						
-						prevUpdates.set(item._id, itemUpdates);
+						prevUpdates.set(item._id, itemUpdates as I);
 						updated.push(item);
 						
 						break;
@@ -289,7 +290,7 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 	
 	[updateSymbol] = this.update;
 	
-	getAsUpdates() {
+	getAsUpdates(): Updates<I> {
 		return (
 			(this.size || this.sortList) ?
 				[ [ "i"/* initial */, [ ...this.updates.values() ], this.sortList ] ] :
@@ -299,7 +300,7 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 	
 	[getAsUpdatesSymbol] = this.getAsUpdates;
 	
-	getAsInitialUpdated() {
+	getAsInitialUpdated(): Updated<I> {
 		return Object.assign([ ...this.sorted ], {
 			added: [ ...this.sorted ],
 			deleted: []
