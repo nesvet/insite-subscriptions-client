@@ -19,7 +19,7 @@ import {
 
 type Item = unknown;
 
-type Updated<I extends Item = Item> = {
+export type Updated<I extends Item = Item> = {
 	deleted: I[];
 	added: I[];
 } & I[];
@@ -271,5 +271,3 @@ export class SubscriptionArrayWithSubscription<I extends Item = Item> extends Su
 }
 
 SubscriptionArray.WithSubscription = SubscriptionArrayWithSubscription;
-
-export { Updated as SubscriptionArrayUpdated };

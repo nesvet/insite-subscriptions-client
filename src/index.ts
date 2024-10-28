@@ -1,8 +1,8 @@
 export * from "./Subscription.js";
-export { SubscriptionArray, SubscriptionArrayUpdated, SubscriptionArrayWithSubscription } from "./SubscriptionArray";
+export { SubscriptionArray, SubscriptionArrayWithSubscription, Updated as SubscriptionArrayUpdated } from "./SubscriptionArray";
 export * from "./SubscriptionGroup";
-export { SubscriptionMap, SubscriptionMapUpdated, SubscriptionMapWithSubscription } from "./SubscriptionMap";
-export { SubscriptionObject, SubscriptionObjectUpdated, SubscriptionObjectWithSubscription } from "./SubscriptionObject";
+export { SubscriptionMap, SubscriptionMapWithSubscription, Updated as SubscriptionMapUpdated } from "./SubscriptionMap";
+export { SubscriptionObject, SubscriptionObjectWithSubscription, Updated as SubscriptionObjectUpdated } from "./SubscriptionObject";
 export {
 	clearSymbol,
 	getAsInitialUpdatedSymbol,

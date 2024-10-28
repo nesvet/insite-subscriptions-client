@@ -1,10 +1,10 @@
 import type {
-	SubscriptionArrayUpdated,
+	Updated as SubscriptionArrayUpdated,
 	Updates as SubscriptionArrayUpdates,
 	SubscriptionArrayWithSubscription
 } from "../SubscriptionArray";
 import type {
-	SubscriptionMapUpdated,
+	Updated as SubscriptionMapUpdated,
 	Updates as SubscriptionMapUpdates,
 	SubscriptionMapWithSubscription
 } from "../SubscriptionMap";

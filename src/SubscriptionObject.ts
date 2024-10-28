@@ -164,5 +164,3 @@ export class SubscriptionObjectWithSubscription extends SubscriptionObject {
 }
 
 SubscriptionObject.WithSubscription = SubscriptionObjectWithSubscription;
-
-export { Updated as SubscriptionObjectUpdated };

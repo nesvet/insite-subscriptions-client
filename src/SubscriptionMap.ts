@@ -18,7 +18,7 @@ type GenericItem = { _id: string } & Record<string, any>;// eslint-disable-line 
 
 type Item = GenericItem | SubscriptionMapItem;
 
-type Updated<I extends Item = Item> = {
+export type Updated<I extends Item = Item> = {
 	deleted: string[];
 	added: I[];
 } & I[];
@@ -451,5 +451,3 @@ export class SubscriptionMapItem {
 }
 
 SubscriptionMap.Item = SubscriptionMapItem;
-
-export { Updated as SubscriptionMapUpdated };
