@@ -194,8 +194,8 @@ export class SubscriptionGroupItem<T extends SubscriptionType = SubscriptionType
 		if (!this.group) {
 			this.group = group;
 			
-			this.group.items.push(this);
-			this.group.items[this.name] = this;
+			this.group.items.push(this as SubscriptionGroupItem<any>);
+			this.group.items[this.name] = this as SubscriptionGroupItem<any>;
 			
 			if (!this.#loadPromise || this.#loadPromise.isFulfilled)
 				this.#loadPromise = new StatefulPromise();
@@ -259,7 +259,7 @@ export class SubscriptionGroupItem<T extends SubscriptionType = SubscriptionType
 			delete this.group.values[this.name];
 			removeOne(this.group.values, this.value);
 			delete this.group.items[this.name];
-			removeOne(this.group.items, this);
+			removeOne(this.group.items, this as SubscriptionGroupItem<any>);
 			
 			delete this.group;
 		}
