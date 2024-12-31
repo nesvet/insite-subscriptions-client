@@ -100,47 +100,47 @@ export class SubscriptionObjectWithSubscription extends SubscriptionObject {
 	constructor(publicationName: string, params: unknown[], onUpdate: UpdateHandler, immediately = true) {
 		super(null, onUpdate);
 		
-		this.publicationName = publicationName;
-		this.params = params;
+		this.#publicationName = publicationName;
+		this.#params = params;
 		
 		if (immediately)
 			this[subscribeSymbol]();
 		
 	}
 	
-	private publicationName;
-	private params;
-	private subscription: null | Subscription = null;
+	#publicationName;
+	#params;
+	#subscription: null | Subscription = null;
 	
 	[subscribeSymbol]() {
 		
-		if (!this.subscription)
-			this.subscription = new Subscription("object", this.publicationName, this.params, updates => this[updateSymbol](updates as Updates));
+		if (!this.#subscription)
+			this.#subscription = new Subscription("object", this.#publicationName, this.#params, updates => this[updateSymbol](updates as Updates));
 		
 	}
 	
 	[unsubscribeSymbol]() {
 		
-		if (this.subscription) {
-			this.subscription.cancel();
-			this.subscription = null;
+		if (this.#subscription) {
+			this.#subscription.cancel();
+			this.#subscription = null;
 		}
 		
 	}
 	
 	[renewSymbol](publicationName?: string, params?: unknown[]) {
 		
-		if (this.subscription) {
+		if (this.#subscription) {
 			this[unsubscribeSymbol]();
 			
 			if (publicationName)
 				if (Array.isArray(publicationName))
 					params = publicationName;
 				else
-					this.publicationName = publicationName;
+					this.#publicationName = publicationName;
 			
 			if (params)
-				this.params = params;
+				this.#params = params;
 			
 			this[subscribeSymbol]();
 		}
@@ -148,7 +148,7 @@ export class SubscriptionObjectWithSubscription extends SubscriptionObject {
 	}
 	
 	[getSubscriptionSymbol]() {
-		return this.subscription;
+		return this.#subscription;
 	}
 	
 	get [Symbol.toStringTag]() {

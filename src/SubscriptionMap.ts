@@ -1,4 +1,4 @@
-import { removeOne } from "@nesvet/n";
+import { removeOne, unique } from "@nesvet/n";
 import { Subscription } from "./Subscription";
 import {
 	clearSymbol,
@@ -90,14 +90,13 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 	
 	handleUpdate;
 	
-	// private updates = new Map<string, { _id: string } & Partial<I>>();
-	private updates = new Map<string, I>();
+	#updates = new Map<string, I>();
 	
 	sortList: null | SortList = null;
 	
 	sortCompareFunction: ((a: I, b: I) => number) | null = null;
 	
-	private fieldsToSort: string[] = [];
+	#fieldsToSort: string[] = [];
 	
 	sorted: I[] = [];
 	
@@ -116,10 +115,10 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 		return (this.handleUpdate = handleUpdate);
 	}
 	
-	private TheItem!: { new (map: SubscriptionMap<I>, updates: GenericItem): I };
+	#Item!: { new (map: SubscriptionMap<I>, updates: GenericItem): I };
 	
 	set Item(TheItem: { new (map: SubscriptionMap<I>, updates: GenericItem): I }) {
-		this.TheItem = TheItem;
+		this.#Item = TheItem;
 		
 		if (this.size)
 			for (const [ _id, item ] of this)
@@ -128,7 +127,7 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 	}
 	
 	get Item() {
-		return this.TheItem;
+		return this.#Item;
 	}
 	
 	update(updates: Updates<I>) {
@@ -141,8 +140,8 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 		if (updates) {
 			let shouldSort = false;
 			
-			const TheItem = this.TheItem;// eslint-disable-line prefer-destructuring
-			const prevUpdates = this.updates;
+			const TheItem = this.#Item;
+			const prevUpdates = this.#updates;
 			
 			for (const update of updates)
 				switch (update?.[0]) {
@@ -152,12 +151,12 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 						if (sortList) {
 							this.sortList = sortList;
 							this.sortCompareFunction = createSortFunction(sortList);
-							this.fieldsToSort = [ ...new Set(Object.keys(sortList).map(key => key.replace(/\..+/, ""))) ];
+							this.#fieldsToSort = unique(Object.keys(sortList).map(key => key.replace(/\..+/, "")));
 							shouldSort = true;
 						} else {
 							this.sortList = null;
 							this.sortCompareFunction = null;
-							this.fieldsToSort = [];
+							this.#fieldsToSort = [];
 						}
 						
 						if (this.size) {
@@ -239,7 +238,7 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 							if (isAtomic)
 								itemUpdates = Object.assign(prevItemUpdates, itemUpdates);
 							
-							if (this.sortList && !shouldSort && (!updatedFields || updatedFields.some(fieldName => this.fieldsToSort.includes(fieldName))))
+							if (this.sortList && !shouldSort && (!updatedFields || updatedFields.some(fieldName => this.#fieldsToSort.includes(fieldName))))
 								shouldSort = true;
 						} else {
 							item = (TheItem ? new TheItem(this, itemUpdates) : { ...itemUpdates }) as I;
@@ -293,7 +292,7 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 	getAsUpdates(): Updates<I> {
 		return (
 			(this.size || this.sortList) ?
-				[ [ "i"/* initial */, [ ...this.updates.values() ], this.sortList ] ] :
+				[ [ "i"/* initial */, [ ...this.#updates.values() ], this.sortList ] ] :
 				null
 		);
 	}
@@ -312,11 +311,11 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 	clear() {
 		
 		super.clear();
-		this.updates.clear();
+		this.#updates.clear();
 		this.sorted = [];
 		this.sortList = null;
 		this.sortCompareFunction = null;
-		this.fieldsToSort = [];
+		this.#fieldsToSort = [];
 		
 	}
 	
@@ -428,7 +427,7 @@ SubscriptionMap.WithSubscription = SubscriptionMapWithSubscription;
 
 export class SubscriptionMapItem {
 	constructor(map: SubscriptionMap, updates: GenericItem) {
-		this.map = map;
+		this.#map = map;
 		
 		this.update(updates);
 		
@@ -436,7 +435,7 @@ export class SubscriptionMapItem {
 	
 	_id!: string;
 	
-	private map;
+	#map;
 	
 	update(updates: GenericItem) {
 		Object.assign(this, updates);
@@ -445,7 +444,7 @@ export class SubscriptionMapItem {
 	
 	delete() {
 		
-		this.map.delete(this._id);
+		this.#map.delete(this._id);
 		
 	}
 	
