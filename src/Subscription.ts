@@ -1,4 +1,4 @@
-import type { InSiteWebSocket } from "insite-ws/client";
+import type { WS } from "insite-ws/client";
 
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -11,7 +11,7 @@ declare global {
 
 let i: number;
 let subscriptions: Map<number, Subscription>;
-let ws: InSiteWebSocket;
+let ws: WS;
 
 
 export class Subscription {
@@ -69,7 +69,7 @@ export class Subscription {
 	}
 	
 	
-	static bindTo(_ws: InSiteWebSocket) {
+	static bindTo(_ws: WS) {
 		ws = _ws;
 		
 		i = 0;
