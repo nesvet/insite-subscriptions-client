@@ -5,7 +5,7 @@ import type { WS } from "insite-ws/client";
 
 
 declare global {
-	var __initials: undefined | unknown[];// eslint-disable-line no-var
+	var __initials: unknown[] | undefined;// eslint-disable-line no-var
 }
 
 
@@ -25,7 +25,7 @@ export class Subscription {
 		this.publicationName = publicationName;
 		this.args = args;
 		this.handler = handler;
-		this.immediately = immediately && !window.__initials;
+		this.immediately = immediately && !globalThis.__initials;
 		
 		subscriptions.set(this.i, this);
 		
@@ -34,9 +34,9 @@ export class Subscription {
 		if (ws.isOpen)
 			this.start();
 		
-		if (window.__initials) {
+		if (globalThis.__initials) {
 			this.isActive = true;
-			this.handler(window.__initials.splice(0, 1)[0]);
+			this.handler(globalThis.__initials.splice(0, 1)[0]);
 		} else
 			this.isActive = false;
 		
