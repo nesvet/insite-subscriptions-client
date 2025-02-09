@@ -26,11 +26,11 @@
   "dependencies": {
     "@nesvet/n": "^1.1.22",
     "eventemitter3": "^5.0.1",
-    "insite-ws": "^2.0.20"
+    "insite-ws": "^2.1.0"
   },
   "devDependencies": {
     "@nesvet/conveyer": "^2.4.2",
-    "@nesvet/eslint-config": "^2.0.46",
+    "@nesvet/eslint-config": "^2.0.47",
     "typescript": "^5.7.3"
   }
 }
