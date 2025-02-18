@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@nesvet/conveyer": "^2.4.3",
-    "@nesvet/eslint-config": "^2.0.47",
+    "@nesvet/eslint-config": "^2.0.48",
     "typescript": "^5.7.3"
   }
 }
