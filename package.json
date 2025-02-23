@@ -5,7 +5,7 @@
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
-  "packageManager": "bun@1.2.2",
+  "packageManager": "bun@1.2.3",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "bun .conveyer.js",
@@ -24,9 +24,9 @@
   "author": "Eugene Nesvetaev <dev@nesvet.dev> (https://nesvet.dev/)",
   "license": "MIT",
   "dependencies": {
-    "@nesvet/n": "^1.1.23",
+    "@nesvet/n": "^1.1.24",
     "eventemitter3": "^5.0.1",
-    "insite-ws": "^2.1.4"
+    "insite-ws": "^2.2.0"
   },
   "devDependencies": {
     "@nesvet/conveyer": "^2.4.3",
