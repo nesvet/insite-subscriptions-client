@@ -99,7 +99,7 @@ export class SubscriptionGroup<DS extends UnparsedDefinition[] = any[]> extends 
 	#initPromise: StatefulPromise<SubscriptionGroup>;
 	#unloadPromise!: StatefulPromise<SubscriptionGroup>;
 	
-	#debounceLimit?: null | number = null;
+	#debounceLimit?: number | null = null;
 	
 	applyOptions({ target, debounceLimit }: { target?: Target; debounceLimit?: number }) {
 		

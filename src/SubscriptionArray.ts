@@ -19,10 +19,10 @@ import {
 
 type Item = unknown;
 
-export type Updated<I extends Item = Item> = {
+export type Updated<I extends Item = Item> = I[] & {
 	deleted: I[];
 	added: I[];
-} & I[];
+};
 
 export type Updates<I extends Item = Item> =
 	(
@@ -57,7 +57,7 @@ export class SubscriptionArray<I extends Item = Item> extends Array<I> {
 	
 	sortDirection: -1 | 0 | 1 = 0;
 	
-	sortCompareFunction: null | typeof ascSort | typeof descSort = null;
+	sortCompareFunction: typeof ascSort | typeof descSort | null = null;
 	
 	[getHandleUpdateSymbol]() {
 		return this.handleUpdate;
@@ -205,7 +205,7 @@ export class SubscriptionArrayWithSubscription<I extends Item = Item> extends Su
 	
 	publicationName;
 	params;
-	subscription: null | Subscription = null;
+	subscription: Subscription | null = null;
 	
 	subscribe() {
 		

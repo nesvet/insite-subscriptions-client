@@ -14,14 +14,14 @@ import {
 } from "./symbols";
 
 
-type GenericItem = { _id: string } & Record<string, any>;// eslint-disable-line @typescript-eslint/no-explicit-any
+type GenericItem = Record<string, any> & { _id: string };// eslint-disable-line @typescript-eslint/no-explicit-any
 
 type Item = GenericItem | SubscriptionMapItem;
 
-export type Updated<I extends Item = Item> = {
+export type Updated<I extends Item = Item> = I[] & {
 	deleted: string[];
 	added: I[];
-} & I[];
+};
 
 type SortList = Record<string, -1 | 1>;
 
@@ -29,8 +29,8 @@ export type Updates<I extends Item = Item> =
 	(
 		[ "c"/* create */, item: I ] |
 		[ "d"/* delete */, _id: string ] |
-		[ "i"/* initial */, items: I[], sortList?: null | SortList ] |
-		[ "u"/* update */, itemUpdates: { _id: string } & Partial<I>, isAtomicOrUpdatedFields: string[] | true ] |
+		[ "i"/* initial */, items: I[], sortList?: SortList | null ] |
+		[ "u"/* update */, itemUpdates: Partial<I> & { _id: string }, isAtomicOrUpdatedFields: string[] | true ] |
 		null
 	)[] |
 	null;
@@ -54,10 +54,10 @@ function createSortFunction(sortList: SortList) {
 	
 	document.head.append(tempScript);
 	
-	const sortFunction = window.__insite_subscription_map_sort_function!;
+	const sortFunction = globalThis.__insite_subscription_map_sort_function!;
 	
 	tempScript.remove();
-	delete window.__insite_subscription_map_sort_function;
+	delete globalThis.__insite_subscription_map_sort_function;
 	
 	return sortFunction;
 }
@@ -92,7 +92,7 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 	
 	#updates = new Map<string, I>();
 	
-	sortList: null | SortList = null;
+	sortList: SortList | null = null;
 	
 	sortCompareFunction: ((a: I, b: I) => number) | null = null;
 	
@@ -357,7 +357,7 @@ export class SubscriptionMapWithSubscription<I extends Item = Item> extends Subs
 	publicationName;
 	params;
 	
-	subscription: null | Subscription = null;
+	subscription: Subscription | null = null;
 	
 	subscribe() {
 		

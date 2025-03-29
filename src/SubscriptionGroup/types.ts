@@ -1,17 +1,17 @@
 import type {
+	SubscriptionArrayWithSubscription,
 	Updated as SubscriptionArrayUpdated,
-	Updates as SubscriptionArrayUpdates,
-	SubscriptionArrayWithSubscription
+	Updates as SubscriptionArrayUpdates
 } from "../SubscriptionArray";
 import type {
+	SubscriptionMapWithSubscription,
 	Updated as SubscriptionMapUpdated,
-	Updates as SubscriptionMapUpdates,
-	SubscriptionMapWithSubscription
+	Updates as SubscriptionMapUpdates
 } from "../SubscriptionMap";
 import type {
+	SubscriptionObjectWithSubscription,
 	Updated as SubscriptionObjectUpdated,
-	Updates as SubscriptionObjectUpdates,
-	SubscriptionObjectWithSubscription
+	Updates as SubscriptionObjectUpdates
 } from "../SubscriptionObject";
 import type { SubscriptionGroup } from "./SubscriptionGroup";
 
@@ -41,11 +41,11 @@ export type SubscriptionValue<T> =
 
 export type SubscriptionHandle<T> =
 	T extends "array" ?
-		(updated: null | SubscriptionArrayUpdated<any>, group: SubscriptionGroup) => void :
+		(updated: SubscriptionArrayUpdated<any> | null, group: SubscriptionGroup) => void :
 		T extends "map" ?
-			(updated: null | SubscriptionMapUpdated<any>, group: SubscriptionGroup) => void :
+			(updated: SubscriptionMapUpdated<any> | null, group: SubscriptionGroup) => void :
 			T extends "object" ?
-				(updated: null | SubscriptionObjectUpdated, group: SubscriptionGroup) => void :
+				(updated: SubscriptionObjectUpdated | null, group: SubscriptionGroup) => void :
 				never;
 
 export type SubscriptionOnBeforeInit<T> =
@@ -104,6 +104,7 @@ type ResolveValue<U> =
 			never;
 
 export type ParseValues<T extends Array<any[] | object>> =
+	T &
 	{
 		[K in keyof T as T[K] extends { name: infer N } ?
 			N extends string ?
@@ -115,7 +116,6 @@ export type ParseValues<T extends Array<any[] | object>> =
 					never :
 				never
 		]: ResolveValue<T[K]>;
-	} &
-	T extends Array<infer U> ?
+	} extends Array<infer U> ?
 		ResolveValue<U>[] :
 		never;

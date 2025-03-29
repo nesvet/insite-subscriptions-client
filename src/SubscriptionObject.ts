@@ -17,7 +17,7 @@ const handleUpdateSymbol = Symbol("handleUpdate");
 const updatesSymbol = Symbol("updates");
 
 export type Updated = Record<string, unknown>;
-export type Updates = null | Record<string, unknown>;
+export type Updates = Record<string, unknown> | null;
 export type UpdateHandler = (object: SubscriptionObject, updated: Updated, updates: Updates) => void;
 
 
@@ -110,7 +110,7 @@ export class SubscriptionObjectWithSubscription extends SubscriptionObject {
 	
 	#publicationName;
 	#params;
-	#subscription: null | Subscription = null;
+	#subscription: Subscription | null = null;
 	
 	[subscribeSymbol]() {
 		

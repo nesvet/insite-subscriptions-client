@@ -1,22 +1,22 @@
 import EventEmitter from "eventemitter3";
 import { debounce, removeOne, StatefulPromise } from "@nesvet/n";
 import {
+	SubscriptionArrayWithSubscription,
 	type Updated as SubscriptionArrayUpdated,
 	type UpdateHandler as SubscriptionArrayUpdateHandler,
-	type Updates as SubscriptionArrayUpdates,
-	SubscriptionArrayWithSubscription
+	type Updates as SubscriptionArrayUpdates
 } from "../SubscriptionArray";
 import {
+	SubscriptionMapWithSubscription,
 	type Updated as SubscriptionMapUpdated,
 	type UpdateHandler as SubscriptionMapUpdateHandler,
-	type Updates as SubscriptionMapUpdates,
-	SubscriptionMapWithSubscription
+	type Updates as SubscriptionMapUpdates
 } from "../SubscriptionMap";
 import {
+	SubscriptionObjectWithSubscription,
 	type Updated as SubscriptionObjectUpdated,
 	type UpdateHandler as SubscriptionObjectUpdateHandler,
-	type Updates as SubscriptionObjectUpdates,
-	SubscriptionObjectWithSubscription
+	type Updates as SubscriptionObjectUpdates
 } from "../SubscriptionObject";
 import {
 	getAsInitialUpdatedSymbol,
@@ -63,7 +63,7 @@ export class SubscriptionGroupItem<T extends SubscriptionType = SubscriptionType
 	name;
 	group?: SubscriptionGroup;
 	value?: SubscriptionValue<T>;
-	type!: "object" | T;
+	type!: T | "object";
 	publicationName!: Definition<T>["publicationName"];
 	params!: Definition<T>["params"];
 	handle!: Definition<T>["handle"];
@@ -125,7 +125,6 @@ export class SubscriptionGroupItem<T extends SubscriptionType = SubscriptionType
 		
 		this.#attachTo(group);
 		
-		return null;
 	}
 	
 	#applyOptions({ debounceLimit, preventBind }: { debounceLimit?: number; preventBind?: boolean }) {
@@ -266,7 +265,7 @@ export class SubscriptionGroupItem<T extends SubscriptionType = SubscriptionType
 		
 	}
 	
-	#loadUpdated: null | SubscriptionUpdated<T> = null;
+	#loadUpdated: SubscriptionUpdated<T> | null = null;
 	
 	#handleSubscription: HandleSubscription<T> = (_, updated, updates) => {
 		if (updates)
@@ -395,7 +394,6 @@ export class SubscriptionGroupItem<T extends SubscriptionType = SubscriptionType
 				}
 			}
 		
-		return null;
 	}
 	
 	unsubscribe() {
