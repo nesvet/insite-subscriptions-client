@@ -47,7 +47,12 @@ function createSortFunction(sortList: SortList) {
 	
 	tempScript.textContent = `window.__insite_subscription_map_sort_function = function sort(a, b) { return ${
 		Object.entries(sortList)
-			.map(([ key, value ]) => value > 0 ? `a.${key} > b.${key} ? 1 : a.${key} < b.${key} ? -1 :` : `a.${key} < b.${key} ? 1 : a.${key} > b.${key} ? -1 :`)
+			.map(([ key, value ]) => {
+				if (key.includes("."))
+					key = key.replaceAll(".", "?.");
+				
+				return value > 0 ? `a.${key} > b.${key} ? 1 : a.${key} < b.${key} ? -1 :` : `a.${key} < b.${key} ? 1 : a.${key} > b.${key} ? -1 :`;
+			})
 			.concat("0")
 			.join(" ")
 	};}`;
