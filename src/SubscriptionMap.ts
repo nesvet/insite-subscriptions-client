@@ -38,7 +38,7 @@ export type Updates<I extends Item = Item> =
 export type UpdateHandler<I extends Item = Item> = (map: SubscriptionMap<I>, updated: Updated<I>, updates: Updates<I>) => void;
 
 declare global {
-	var __insite_subscription_map_sort_function: ((a: Item, b: Item) => -1 | 0 | 1) | undefined;// eslint-disable-line no-var, camelcase
+	var __insite_subscription_map_sort_function: ((a: Item, b: Item) => -1 | 0 | 1) | undefined;// eslint-disable-line no-var, @typescript-eslint/naming-convention
 }
 
 function createSortFunction(sortList: SortList) {
@@ -122,7 +122,7 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 	
 	#Item!: { new (map: SubscriptionMap<I>, updates: GenericItem): I };
 	
-	set Item(TheItem: { new (map: SubscriptionMap<I>, updates: GenericItem): I }) {
+	set Item(TheItem: { new (map: SubscriptionMap<I>, updates: GenericItem): I }) { // eslint-disable-line @typescript-eslint/naming-convention
 		this.#Item = TheItem;
 		
 		if (this.size)
@@ -145,7 +145,7 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 		if (updates) {
 			let shouldSort = false;
 			
-			const TheItem = this.#Item;
+			const TheItem = this.#Item;// eslint-disable-line @typescript-eslint/naming-convention
 			const prevUpdates = this.#updates;
 			
 			for (const update of updates)
@@ -197,7 +197,7 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 							}
 							
 							for (const [ _id, itemUpdates ] of updatesMap) {
-								const item = TheItem ? new TheItem(this, itemUpdates) : { ...itemUpdates };
+								const item = TheItem ? new TheItem(this, itemUpdates) : { ...itemUpdates };// eslint-disable-line @typescript-eslint/no-misused-spread
 								this.set(_id, item);
 								prevUpdates.set(_id, itemUpdates);
 								updated.push(item);
@@ -209,7 +209,7 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 							
 						} else
 							for (const itemUpdates of array) {
-								const item = (TheItem ? new TheItem(this, itemUpdates) : { ...itemUpdates }) as I;
+								const item = (TheItem ? new TheItem(this, itemUpdates) : { ...itemUpdates });// eslint-disable-line @typescript-eslint/no-misused-spread
 								this.set(item._id, item);
 								this.sorted.push(item);
 								prevUpdates.set(item._id, itemUpdates);
@@ -246,7 +246,7 @@ export class SubscriptionMap<I extends Item = Item> extends Map<string, I> {
 							if (this.sortList && !shouldSort && (!updatedFields || updatedFields.some(fieldName => this.#fieldsToSort.includes(fieldName))))
 								shouldSort = true;
 						} else {
-							item = (TheItem ? new TheItem(this, itemUpdates) : { ...itemUpdates }) as I;
+							item = (TheItem ? new TheItem(this, itemUpdates) : { ...itemUpdates }) as I;// eslint-disable-line @typescript-eslint/no-misused-spread
 							this.set(item._id, item);
 							this.sorted.push(item);
 							if (this.sortList)

@@ -147,7 +147,7 @@ export class SubscriptionGroupItem<T extends SubscriptionType = SubscriptionType
 				if (isDetached)
 					this.group = group;
 				
-				emitUpdate(debouncedUpdated!);
+				emitUpdate(debouncedUpdated);
 				
 				if (isDetached)
 					delete this.group;
@@ -161,7 +161,7 @@ export class SubscriptionGroupItem<T extends SubscriptionType = SubscriptionType
 					if (isUpdatedMapOrArray(updated))
 						if (isUpdatedMapOrArray(debouncedUpdated!))
 							for (const item of updated)
-								debouncedUpdated.push(item as any);
+								debouncedUpdated.push(item);
 						else
 							debouncedUpdated = Object.assign([ ...updated ], {
 								added: [ ...updated.added ],
@@ -171,7 +171,7 @@ export class SubscriptionGroupItem<T extends SubscriptionType = SubscriptionType
 						if (debouncedUpdated)
 							Object.assign(debouncedUpdated, updated);
 						else
-							debouncedUpdated = { ...updated };
+							debouncedUpdated = { ...updated };// eslint-disable-line @typescript-eslint/no-misused-spread
 					else
 						debouncedUpdated = updated;
 				
@@ -255,9 +255,9 @@ export class SubscriptionGroupItem<T extends SubscriptionType = SubscriptionType
 			this.isLoaded = false;
 			this.#unload();
 			
-			delete this.group.values[this.name];
+			delete this.group.values[this.name];// eslint-disable-line @typescript-eslint/no-array-delete
 			removeOne(this.group.values, this.value);
-			delete this.group.items[this.name];
+			delete this.group.items[this.name];// eslint-disable-line @typescript-eslint/no-array-delete
 			removeOne(this.group.items, this as SubscriptionGroupItem<any>);
 			
 			delete this.group;

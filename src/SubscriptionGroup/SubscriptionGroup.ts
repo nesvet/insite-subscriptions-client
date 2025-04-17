@@ -82,7 +82,7 @@ export class SubscriptionGroup<DS extends UnparsedDefinition[] = any[]> extends 
 		
 		this.#initPromise = new StatefulPromise();
 		
-		this.attach(definitions, false, immediately);
+		void this.attach(definitions, false, immediately);
 		
 	}
 	
