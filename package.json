@@ -1,36 +1,36 @@
 {
-  "name": "insite-subscriptions-client",
+	"name": "insite-subscriptions-client",
   "version": "2.2.3",
-  "description": "inSite subscriptions client side",
-  "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "packageManager": "bun@1.2.9",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "bun .conveyer.js",
-    "postbuild": "tsc -p ."
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/nesvet/insite-subscriptions-client.git"
-  },
-  "keywords": [
-    "insite",
-    "publications",
-    "subscriptions",
-    "client"
-  ],
-  "author": "Eugene Nesvetaev <dev@nesvet.dev> (https://nesvet.dev/)",
-  "license": "MIT",
-  "dependencies": {
-    "@nesvet/n": "^1.1.29",
-    "eventemitter3": "^5.0.1",
-    "insite-ws": "^2.2.3"
-  },
-  "devDependencies": {
-    "@nesvet/conveyer": "^2.5.1",
-    "@nesvet/eslint-config": "^2.0.52",
-    "typescript": "^5.8.3"
-  }
+	"description": "inSite subscriptions client side",
+	"type": "module",
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"packageManager": "bun@1.2.11",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build": "bun .conveyer.js",
+		"postbuild": "tsc -p ."
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/nesvet/insite-subscriptions-client.git"
+	},
+	"keywords": [
+		"insite",
+		"publications",
+		"subscriptions",
+		"client"
+	],
+	"author": "Eugene Nesvetaev <dev@nesvet.dev> (https://nesvet.dev/)",
+	"license": "MIT",
+	"dependencies": {
+		"@nesvet/n": "^1.2.0",
+		"eventemitter3": "^5.0.1",
+		"insite-ws": "^2.3.0"
+	},
+	"devDependencies": {
+		"@nesvet/conveyer": "^2.5.2",
+		"@nesvet/eslint-config": "^2.1.1",
+		"typescript": "^5.8.3"
+	}
 }
